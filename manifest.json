@@ -1,0 +1,9 @@
+{
+  "codeowners": ["@ghau"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "",
+  "domain": "tv_time",
+  "name": "Tv Time",
+  "requirements": []
+}

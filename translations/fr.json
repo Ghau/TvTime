@@ -1,0 +1,17 @@
+{
+  "config": {
+    "error": {
+      "cant_login": "Impossible de se connecter, vérifies ton email et ton mot de passe"
+    },
+    "step": {
+      "user": {
+        "title": "Ajout compte Tv Time",
+        "description": "Renseigne l'email et le mot de passe de ton compte Tv Time",
+        "data": {
+          "login": "Email",
+          "password": "Mot de passe"
+        }
+      }
+    }
+  }
+}

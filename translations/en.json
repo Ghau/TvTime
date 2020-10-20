@@ -1,0 +1,17 @@
+{
+  "config": {
+    "error": {
+      "cant_login": "Can't login, check username and password"
+    },
+    "step": {
+      "user": {
+        "title": "Add Tv Time Account",
+        "description": "Set email and password for your account",
+        "data": {
+          "login": "Email",
+          "password": "Password"
+        }
+      }
+    }
+  }
+}
