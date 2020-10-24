@@ -12,6 +12,7 @@ class TvTimeFlowHandler(ConfigFlow, domain=DOMAIN):
             session = async_create_clientsession(self.hass)
             tv = TvTimeClient(session, user_input['login'],user_input['password'])
             if await tv.login():
+                user_input.update(tv.auth)
                 return self.async_create_entry(title="Tv Time", data=user_input)
             else:
                 return await self.async_step_user(error='cant_login')

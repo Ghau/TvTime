@@ -20,6 +20,7 @@ async def async_setup_platform(
     async_add_entities: Callable
 ) -> None:
     tv = TvTime(hass, config['login'], config['password'])
+    await tv.login()
     sensors = [TvTimeSensor(tv, 'time-spent'), TvTimeSensor(tv, 'watched-episodes')]
     async_add_entities(sensors, update_before_add=True)
 

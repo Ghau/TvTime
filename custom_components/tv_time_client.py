@@ -60,9 +60,6 @@ class TvTimeClient:
         return True
 
     async def get_info(self):
-        if self.auth == None:
-            await self.login()
-
         try:
             r = await self.session.get('https://' + BASE_URL + STATS_WATCHED.replace('{user_id}', self.auth['user_id']),
                 headers={
@@ -80,15 +77,14 @@ class TvTimeClient:
 
         raw = await r.read()
         resp: dict = json.loads(raw)
-
         episodes, total, months, days, hours = 0, 0, 0, 0, 0
         for stats in resp:
             if stats['name'] == 'Watched episodes':
-                episodes = stats['value']
+                episodes = int(stats['value'])
             if stats['name'] == 'Time spent':
-                months = stats['nb_months']
-                days = stats['nb_days']
-                hours = stats['nb_hours']
+                months = int(stats['nb_months'])
+                days = int(stats['nb_days'])
+                hours = int(stats['nb_hours'])
                 total = (months * 24 * 30) + (days * 24) + hours
 
         return {'total': total, 'episodes': episodes, 'months': months, 'days': days, 'hours': hours}
