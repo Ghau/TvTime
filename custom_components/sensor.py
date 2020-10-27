@@ -20,8 +20,7 @@ async def async_setup_platform(
     async_add_entities: Callable
 ) -> None:
     tv = TvTime(hass, config['login'], config['password'])
-    await tv.login()
-    sensors = [TvTimeSensor(tv, 'time-spent'), TvTimeSensor(tv, 'watched-episodes')]
+    sensors = [TvTimeSensor(tv, 'time-spent'), TvTimeSensor(tv, 'watched-episodes'), TvTimeSensor(tv, 'time-to-watch'), TvTimeSensor(tv, 'remaining-episodes')]
     async_add_entities(sensors, update_before_add=True)
 
 async def async_setup_entry(hass: HomeAssistantType, config: ConfigType, async_add_devices: Callable) -> None:
@@ -29,6 +28,8 @@ async def async_setup_entry(hass: HomeAssistantType, config: ConfigType, async_a
     new_devices = []
     new_devices.append(TvTimeSensor(tv, 'time-spent'))
     new_devices.append(TvTimeSensor(tv, 'watched-episodes'))
+    new_devices.append(TvTimeSensor(tv, 'time-to-watch'))
+    new_devices.append(TvTimeSensor(tv, 'remaining-episodes'))
     async_add_devices(new_devices, update_before_add=True)
 
 class TvTimeSensor(Entity):
@@ -62,7 +63,7 @@ class TvTimeSensor(Entity):
 
     @property
     def unit_of_measurement(self):
-        return (None, 'minutes')[self.name == 'time-spent']
+        return ('episodes', 'hours')[self.name == 'time-spent' or self.name == 'time-to-watch']
 
     @property
     def device_info(self):
@@ -76,12 +77,15 @@ class TvTimeSensor(Entity):
 
     async def async_update(self):
         try:
-            info = await self.tv.get_info()
+            if self.name == 'time-spent' or self.name == 'watched-episodes':
+                info = await self.tv.get_info()
+            elif self.name == 'time-to-watch' or self.name == 'remaining-episodes':
+                info = await self.tv.get_info_remaining()
 
-            if self.name == 'time-spent':
+            if self.name == 'time-spent' or self.name == 'time-to-watch':
                 self._state = info['total']
                 self.attrs = {'months': info['months'], 'days': info['days'], 'hours': info['hours']}
-            elif self.name == 'watched-episodes':
+            elif self.name == 'watched-episodes' or self.name == 'remaining-episodes':
                 self._state = info['episodes']
 
             self._available = True

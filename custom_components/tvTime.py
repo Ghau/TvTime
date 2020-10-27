@@ -28,10 +28,8 @@ class TvTime():
         return
 
     async def get_info(self):
-        try:
-            await self.tv.login()
-        except Exception as e:
-            return False
-
         return await self.tv.get_info()
+
+    async def get_info_remaining(self):
+        return await self.tv.get_info_remaining()
 
