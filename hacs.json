@@ -1,4 +1,5 @@
 {
     "name": "Tv Time",
-    "render_readme": true
+    "render_readme": true,
+    "domains": ["sensor"]
 }
