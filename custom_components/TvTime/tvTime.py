@@ -33,3 +33,6 @@ class TvTime():
     async def get_info_remaining(self):
         return await self.tv.get_info_remaining()
 
+    async def get_info_series(self):
+        return await self.tv.get_info_series()
+

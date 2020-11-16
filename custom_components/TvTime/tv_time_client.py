@@ -15,6 +15,7 @@ USER_LANG_SETTING = "en"
 SIGNIN = "/v2/signin"
 STATS_WATCHED = "/v2/user/{user_id}/statistics?stat_type=watched&viewer_id={user_id}&lang=fr"
 STATS_REMAINING = "/v2/user/{user_id}/statistics?stat_type=remaining&viewer_id={user_id}&lang=fr"
+STATS_SERIES = "/v2/my_shows?fields=shows.fields(id,name,stripped_name,country)"
 
 class TvTimeClient:
     auth = None
@@ -73,10 +74,41 @@ class TvTimeClient:
 
         return {'total': total, 'episodes': episodes, 'months': months, 'days': days, 'hours': hours}
 
+    def format_series_data(self, data: dict):
+        series, not_started_yet, coming_soon, watching, up_to_date, finished, stopped_watching, for_later = 0, 0, 0, 0, 0, 0, 0, 0
+        for stats in data:
+            if stats['id'] == 'not_started_yet':
+                not_started_yet = len(stats['shows'])
+            if stats['id'] == 'coming_soon':
+                coming_soon = len(stats['shows'])
+            if stats['id'] == 'watching':
+                watching = len(stats['shows'])
+            if stats['id'] == 'up_to_date':
+                up_to_date = len(stats['shows'])
+            if stats['id'] == 'finished':
+                finished = len(stats['shows'])
+            if stats['id'] == 'stopped_watching':
+                stopped_watching = len(stats['shows'])
+            if stats['id'] == 'for_later':
+                for_later = len(stats['shows'])
+
+        series = not_started_yet + coming_soon + watching + up_to_date + finished + stopped_watching + for_later
+
+        return {
+            'series': series,
+            'not_started_yet': not_started_yet,
+            'coming_soon': coming_soon,
+            'watching': watching,
+            'up_to_date': up_to_date,
+            'finished': finished,
+            'stopped_watching': stopped_watching,
+            'for_later': for_later
+        }
+
+
     async def call_tv_time(self, url: str):
         if self.auth == None:
             await self.login()
-
         try:
             r = await self.session.get('https://' + BASE_URL + url.replace('{user_id}', self.auth['user_id']),
                 headers={
@@ -105,3 +137,9 @@ class TvTimeClient:
         resp: dict = json.loads(raw)
 
         return self.format_data(resp)
+
+    async def get_info_series(self):
+        raw = await self.call_tv_time(STATS_SERIES)
+        resp: dict = json.loads(raw)
+
+        return self.format_series_data(resp)

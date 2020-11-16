@@ -20,7 +20,13 @@ async def async_setup_platform(
     async_add_entities: Callable
 ) -> None:
     tv = TvTime(hass, config['login'], config['password'])
-    sensors = [TvTimeSensor(tv, 'time-spent'), TvTimeSensor(tv, 'watched-episodes'), TvTimeSensor(tv, 'time-to-watch'), TvTimeSensor(tv, 'remaining-episodes')]
+    sensors = [
+        TvTimeSensor(tv, 'time-spent'),
+        TvTimeSensor(tv, 'watched-episodes'),
+        TvTimeSensor(tv, 'time-to-watch'),
+        TvTimeSensor(tv, 'remaining-episodes'),
+        TvTimeSensor(tv, 'series')
+    ]
     async_add_entities(sensors, update_before_add=True)
 
 async def async_setup_entry(hass: HomeAssistantType, config: ConfigType, async_add_devices: Callable) -> None:
@@ -30,6 +36,7 @@ async def async_setup_entry(hass: HomeAssistantType, config: ConfigType, async_a
     new_devices.append(TvTimeSensor(tv, 'watched-episodes'))
     new_devices.append(TvTimeSensor(tv, 'time-to-watch'))
     new_devices.append(TvTimeSensor(tv, 'remaining-episodes'))
+    new_devices.append(TvTimeSensor(tv, 'series'))
     async_add_devices(new_devices, update_before_add=True)
 
 class TvTimeSensor(Entity):
@@ -63,7 +70,12 @@ class TvTimeSensor(Entity):
 
     @property
     def unit_of_measurement(self):
-        return ('episodes', 'hours')[self.name == 'time-spent' or self.name == 'time-to-watch']
+        if self.name == 'time-spent' or self.name == 'time-to-watch':
+            return 'hours'
+        if self.name == 'watched-episodes' or self.name == 'remaining-episodes':
+            return 'episodes'
+        else:
+            return self.name
 
     @property
     def device_info(self):
@@ -81,12 +93,25 @@ class TvTimeSensor(Entity):
                 info = await self.tv.get_info()
             elif self.name == 'time-to-watch' or self.name == 'remaining-episodes':
                 info = await self.tv.get_info_remaining()
+            else:
+                info = await self.tv.get_info_series()
 
             if self.name == 'time-spent' or self.name == 'time-to-watch':
                 self._state = info['total']
                 self.attrs = {'months': info['months'], 'days': info['days'], 'hours': info['hours']}
             elif self.name == 'watched-episodes' or self.name == 'remaining-episodes':
                 self._state = info['episodes']
+            else:
+                self._state = info['series']
+                self.attrs = {
+                    'not_started_yet': info['not_started_yet'],
+                    'coming_soon': info['coming_soon'],
+                    'watching': info['watching'],
+                    'up_to_date': info['up_to_date'],
+                    'finished': info['finished'],
+                    'stopped_watching': info['stopped_watching'],
+                    'for_later': info['for_later']
+                }
 
             self._available = True
 
