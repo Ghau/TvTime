@@ -4,6 +4,7 @@ from datetime import timedelta
 from typing import Any, Callable, Dict, Optional
 
 from .tvTime import TvTime
+from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.typing import (
     ConfigType,
@@ -65,7 +66,7 @@ class TvTimeSensor(Entity):
         return self._state
 
     @property
-    def device_state_attributes(self) -> Dict[str, Any]:
+    def extra_state_attributes(self) -> Dict[str, Any]:
         return self.attrs
 
     @property
@@ -84,7 +85,7 @@ class TvTimeSensor(Entity):
             'manufacturer': 'www.tvtime.com',
             'model': 'Series',
             'default_name': 'tvtime',
-            'entry_type': 'service',
+            'entry_type': DeviceEntryType.SERVICE,
         }
 
     async def async_update(self):
@@ -116,7 +117,7 @@ class TvTimeSensor(Entity):
                     'genre': info_details['genre'],
                     'network': info_details['network'],
                     'gender': info_details['gender'],
-                    'average': info_details['average'],
+                    'average_age': info_details['average'],
                 }
 
             self._available = True
