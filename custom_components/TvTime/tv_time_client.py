@@ -15,6 +15,7 @@ USER_LANG_SETTING = "en"
 SIGNIN = "/v2/signin"
 STATS_WATCHED = "/v2/user/{user_id}/statistics?stat_type=watched&viewer_id={user_id}&lang=fr"
 STATS_REMAINING = "/v2/user/{user_id}/statistics?stat_type=remaining&viewer_id={user_id}&lang=fr"
+STATS_SERIES_DETAILS = "/v2/user/2865197/statistics?stat_type=shows&viewer_id=2865197&lang=fr"
 STATS_SERIES = "/v2/my_shows?fields=shows.fields(id,name,stripped_name,country)"
 
 class TvTimeClient:
@@ -25,7 +26,7 @@ class TvTimeClient:
         self.email = email
         self.password = password
 
-    async def login(self):
+    async def login(self) -> bool:
         if self.auth:
             return True
 
@@ -61,7 +62,7 @@ class TvTimeClient:
 
         return True
 
-    def format_data(self, data: dict):
+    def format_data(self, data: dict) -> dict :
         episodes, total, months, days, hours = 0, 0, 0, 0, 0
         for stats in data:
             if stats['name'] == 'Watched episodes' or stats['name'] == 'Remaining episodes':
@@ -74,7 +75,7 @@ class TvTimeClient:
 
         return {'total': total, 'episodes': episodes, 'months': months, 'days': days, 'hours': hours}
 
-    def format_series_data(self, data: dict):
+    def format_series_data(self, data: dict) -> dict:
         series, not_started_yet, coming_soon, watching, up_to_date, finished, stopped_watching, for_later = 0, 0, 0, 0, 0, 0, 0, 0
         for stats in data:
             if stats['id'] == 'not_started_yet':
@@ -105,6 +106,52 @@ class TvTimeClient:
             'for_later': for_later
         }
 
+    def format_series_details_data(self, data: dict) -> dict:
+        if len(data) == 0:
+            _LOGGER.warning("Detailed statistics not found")
+
+            return {
+                'still_production': None,
+                'genre': None,
+                'network': None,
+                'gender': None,
+                'average': None,
+            }
+
+        still_production = data[0]['value']
+        genre, network, gender = {}, {}, {}
+        average = 0
+        if data[0]['detailed_statistics']:
+            index = 0
+            for detailed_statistics in data[0]['detailed_statistics']:
+                if not detailed_statistics['dimensions'][0]['values']:
+                    continue
+
+                values = detailed_statistics['dimensions'][0]['values']
+                if index == 0:
+                    genre = self.extract_values(values)
+                if index == 1:
+                    network = self.extract_values(values)
+                if index == 2:
+                    gender = self.extract_values(values)
+                if index == 3:
+                    average = values[0]['y'][0:values[0]['y'].find(' ', 0)]
+
+                index = index + 1
+
+        return {
+            'still_production': still_production,
+            'genre': genre,
+            'network': network,
+            'gender': gender,
+            'average': average,
+        }
+    def extract_values(self, values) -> dict:
+        extract_value = {}
+        for value in values:
+            extract_value[value['x']] = value['y']
+
+        return extract_value
 
     async def call_tv_time(self, url: str):
         if self.auth == None:
@@ -143,3 +190,9 @@ class TvTimeClient:
         resp: dict = json.loads(raw)
 
         return self.format_series_data(resp)
+
+    async def get_info_series_details(self):
+        raw = await self.call_tv_time(STATS_SERIES_DETAILS)
+        resp: dict = json.loads(raw)
+
+        return self.format_series_details_data(resp)

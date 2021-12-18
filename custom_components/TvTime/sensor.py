@@ -95,6 +95,7 @@ class TvTimeSensor(Entity):
                 info = await self.tv.get_info_remaining()
             else:
                 info = await self.tv.get_info_series()
+                info_details = await self.tv.get_info_series_details()
 
             if self.name == 'time-spent' or self.name == 'time-to-watch':
                 self._state = info['total']
@@ -110,7 +111,12 @@ class TvTimeSensor(Entity):
                     'up_to_date': info['up_to_date'],
                     'finished': info['finished'],
                     'stopped_watching': info['stopped_watching'],
-                    'for_later': info['for_later']
+                    'for_later': info['for_later'],
+                    'still_production': info_details['still_production'],
+                    'genre': info_details['genre'],
+                    'network': info_details['network'],
+                    'gender': info_details['gender'],
+                    'average': info_details['average'],
                 }
 
             self._available = True
