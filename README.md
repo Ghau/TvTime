@@ -42,6 +42,9 @@ tvTime:
 ```
 
 ### Entities
+- sensor.series
+
+     total shows with some infos in attributes
 - sensor.time_spent
 
      total time in hours spent in series
