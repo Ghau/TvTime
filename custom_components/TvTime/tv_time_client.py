@@ -1,18 +1,19 @@
 import logging
 import json
 
+from typing import Dict
 from aiohttp import ClientSession
 
 _LOGGER = logging.getLogger(__name__)
 
-BASE_URL = "api2.tozelabs.com"
-USER_AGENT = "TV Time for Android 8.18.0-2020092504"
-X_API_Key = "LhqxB7GE9a95beFHqiNC85GHdrX8hNi34H2uQ7QG"
-APP_VERSION = "2020092504"
-COUNTRY_CODE = "fr"
-USER_LANG_SETTING = "en"
+BASE_URL = 'api2.tozelabs.com'
+USER_AGENT = 'TV Time for Android 8.18.0-2020092504'
+X_API_Key = 'LhqxB7GE9a95beFHqiNC85GHdrX8hNi34H2uQ7QG'
+APP_VERSION = '2020092504'
+COUNTRY_CODE = 'fr'
+USER_LANG_SETTING = 'en'
 
-SIGNIN = "/v2/signin"
+SIGNIN = '/v2/signin'
 STATS_WATCHED = "/v2/user/{user_id}/statistics?stat_type=watched&viewer_id={user_id}&lang=fr"
 STATS_REMAINING = "/v2/user/{user_id}/statistics?stat_type=remaining&viewer_id={user_id}&lang=fr"
 STATS_SERIES_DETAILS = "/v2/user/2865197/statistics?stat_type=shows&viewer_id=2865197&lang=fr"
@@ -30,20 +31,13 @@ class TvTimeClient:
         if self.auth:
             return True
 
-        _LOGGER.debug(f"Tv Time Connect to https://:{BASE_URL + SIGNIN}")
+        _LOGGER.debug(f'Tv Time Connect to https://:{BASE_URL + SIGNIN}')
         try:
             r = await self.session.post('https://' + BASE_URL + SIGNIN,
                 data={'username': self.email, 'password': self.password},
-                headers={
-                    'User-Agent': USER_AGENT,
-                    'X-API-Key': X_API_Key,
-                    'host': BASE_URL,
-                    'app-version': APP_VERSION,
-                    'country-code': COUNTRY_CODE,
-                    'user-lang-setting': USER_AGENT
-                })
+                headers=self._get_headers())
         except Exception as e:
-            _LOGGER.exception(f"Can't login to Tv Time: {e}")
+            _LOGGER.exception(f'Can\'t login to Tv Time: {e}')
             return False
 
         raw = await r.read()
@@ -52,7 +46,7 @@ class TvTimeClient:
         _LOGGER.debug(f"Tv Time login: {resp['result']}")
 
         if resp['result'] != 'OK':
-            _LOGGER.error(f"Can't login to Tv Time: bad Credentials")
+            _LOGGER.error(f'Can\'t login to Tv Time: bad Credentials')
             return False
 
         self.auth = {
@@ -146,6 +140,7 @@ class TvTimeClient:
             'gender': gender,
             'average': average,
         }
+
     def extract_values(self, values) -> dict:
         extract_value = {}
         for value in values:
@@ -157,16 +152,9 @@ class TvTimeClient:
         if self.auth == None:
             await self.login()
         try:
+            _LOGGER.debug(f"CALL API : {url}")
             r = await self.session.get('https://' + BASE_URL + url.replace('{user_id}', self.auth['user_id']),
-                headers={
-                    'User-Agent': USER_AGENT,
-                    'X-API-Key': X_API_Key,
-                    'host': BASE_URL,
-                    'app-version': APP_VERSION,
-                    'country-code': COUNTRY_CODE,
-                    'user-lang-setting': USER_AGENT,
-                    'Authorization': 'Bearer ' + self.auth['tvst_access_token']
-                })
+                headers={**self._get_headers(), **{'Authorization': 'Bearer ' + self.auth['tvst_access_token']}})
         except Exception as e:
             _LOGGER.exception(f"Can't get stats watched from Tv Time: {e}")
             return False
@@ -196,3 +184,13 @@ class TvTimeClient:
         resp: dict = json.loads(raw)
 
         return self.format_series_details_data(resp)
+
+    def _get_headers(self) -> Dict:
+        return {
+            'User-Agent': USER_AGENT,
+            'X-API-Key': X_API_Key,
+            'host': BASE_URL,
+            'app-version': APP_VERSION,
+            'country-code': COUNTRY_CODE,
+            'user-lang-setting': USER_AGENT
+        }

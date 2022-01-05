@@ -38,6 +38,10 @@ async def async_setup_entry(hass: HomeAssistantType, config: ConfigType, async_a
     new_devices.append(TvTimeSensor(tv, 'time-to-watch'))
     new_devices.append(TvTimeSensor(tv, 'remaining-episodes'))
     new_devices.append(TvTimeSensor(tv, 'series'))
+    new_devices.append(TvTimeSensor(tv, 'genre'))
+    new_devices.append(TvTimeSensor(tv, 'gender'))
+    new_devices.append(TvTimeSensor(tv, 'network'))
+    new_devices.append(TvTimeSensor(tv, 'average_age'))
     async_add_devices(new_devices, update_before_add=True)
 
 class TvTimeSensor(Entity):
@@ -75,6 +79,8 @@ class TvTimeSensor(Entity):
             return 'hours'
         if self.name == 'watched-episodes' or self.name == 'remaining-episodes':
             return 'episodes'
+        elif self.name == 'average_age':
+            return 'year'
         else:
             return self.name
 
@@ -94,6 +100,8 @@ class TvTimeSensor(Entity):
                 info = await self.tv.get_info()
             elif self.name == 'time-to-watch' or self.name == 'remaining-episodes':
                 info = await self.tv.get_info_remaining()
+            elif self.name == 'genre' or self.name == 'gender' or self.name == 'network' or self.name == 'average_age':
+                info_details = await self.tv.get_info_series_details()
             else:
                 info = await self.tv.get_info_series()
                 info_details = await self.tv.get_info_series_details()
@@ -103,6 +111,17 @@ class TvTimeSensor(Entity):
                 self.attrs = {'months': info['months'], 'days': info['days'], 'hours': info['hours']}
             elif self.name == 'watched-episodes' or self.name == 'remaining-episodes':
                 self._state = info['episodes']
+            elif self.name == 'genre':
+                self._state = len(info_details['genre'])
+                self.attrs = info_details['genre']
+            elif self.name == 'gender':
+                self._state = len(info_details['gender'])
+                self.attrs = info_details['gender']
+            elif self.name == 'network':
+                self._state = len(info_details['network'])
+                self.attrs = info_details['network']
+            elif self.name == 'average_age':
+                self._state = float(info_details['average'])
             else:
                 self._state = info['series']
                 self.attrs = {
@@ -114,10 +133,6 @@ class TvTimeSensor(Entity):
                     'stopped_watching': info['stopped_watching'],
                     'for_later': info['for_later'],
                     'still_production': info_details['still_production'],
-                    'genre': info_details['genre'],
-                    'network': info_details['network'],
-                    'gender': info_details['gender'],
-                    'average_age': info_details['average'],
                 }
 
             self._available = True
