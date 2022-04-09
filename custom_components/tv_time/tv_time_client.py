@@ -14,10 +14,11 @@ COUNTRY_CODE = 'fr'
 USER_LANG_SETTING = 'en'
 
 SIGNIN = '/v2/signin'
-STATS_WATCHED = "/v2/user/{user_id}/statistics?stat_type=watched&viewer_id={user_id}&lang=fr"
-STATS_REMAINING = "/v2/user/{user_id}/statistics?stat_type=remaining&viewer_id={user_id}&lang=fr"
-STATS_SERIES_DETAILS = "/v2/user/2865197/statistics?stat_type=shows&viewer_id=2865197&lang=fr"
-STATS_SERIES = "/v2/my_shows?fields=shows.fields(id,name,stripped_name,country)"
+STATS_WATCHED = '/v2/user/{user_id}/statistics?stat_type=watched&viewer_id={user_id}&lang=fr'
+STATS_REMAINING = '/v2/user/{user_id}/statistics?stat_type=remaining&viewer_id={user_id}&lang=fr'
+STATS_SERIES_DETAILS = '/v2/user/2865197/statistics?stat_type=shows&viewer_id=2865197&lang=fr'
+STATS_SERIES = '/v2/my_shows?fields=shows.fields(id,name,stripped_name,country)'
+
 
 class TvTimeClient:
     auth = None
@@ -31,9 +32,10 @@ class TvTimeClient:
         if self.auth:
             return True
 
-        _LOGGER.debug(f'Tv Time Connect to https://:{BASE_URL + SIGNIN}')
+        _LOGGER.debug(f'Tv Time Connect to https://{BASE_URL}{SIGNIN}')
+
         try:
-            r = await self.session.post('https://' + BASE_URL + SIGNIN,
+            r = await self.session.post(f'https://{BASE_URL}{SIGNIN}',
                 data={'username': self.email, 'password': self.password},
                 headers=self._get_headers())
         except Exception as e:
@@ -109,7 +111,7 @@ class TvTimeClient:
                 'genre': None,
                 'network': None,
                 'gender': None,
-                'average': None,
+                'average_age': None,
             }
 
         still_production = data[0]['value']
@@ -138,7 +140,7 @@ class TvTimeClient:
             'genre': genre,
             'network': network,
             'gender': gender,
-            'average': average,
+            'average_age': average,
         }
 
     def extract_values(self, values) -> dict:
