@@ -1,11 +1,12 @@
 {
   "codeowners": ["@ghau"],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": ["http"],
   "documentation": "https://github.com/ghau/TvTime",
   "issue_tracker": "https://github.com/ghau/TvTime/issues",
   "domain": "tv_time",
   "name": "Tv Time",
   "requirements": [],
-  "version": "v0.3.1"
+  "iot_class": "cloud_push",
+  "version": "v1.0.0"
 }

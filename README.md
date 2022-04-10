@@ -2,7 +2,7 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 
-Get metrics from your TvTime profile.
+Get metrics from your [TvTime](https://www.tvtime.com/) profile.
 
 ## Install
 
@@ -17,13 +17,13 @@ You need to copy the `tvTime` folder from this repo to the `custom_components` f
 └── ...
 └── configuration.yaml
 └── custom_components
-    └── tvTime
+    └── tv_time
         └── __init__.py
         └── config_flow.py
+        └── const.py
         └── manifest.json
         └── sensor.py
         └── tv_time_client.py
-        └── tvTime.py
 ```
 
 ## Config
@@ -33,15 +33,8 @@ You need to copy the `tvTime` folder from this repo to the `custom_components` f
 Add new integration Congifuration -> Integration -> Tv Time
 Set your email and password
 
-## Manual
-
-```yaml
-tvTime:
-  login: example@email.com
-  password: BestPasswordEver
-```
-
 ### Entities
+Shows
 - sensor.series
 
      total shows with some infos in attributes
@@ -58,3 +51,12 @@ tvTime:
 
      total episode remaining
 
+Other entities
+- sensor.gender
+- sensor.genre
+- sensor.network
+- sensor.average_age
+
+Movies
+- sensor.movie_time_watched
+- sensor.movie_watched_count
