@@ -30,6 +30,8 @@ async def async_setup_entry(hass: HomeAssistantType, config: ConfigType, async_a
     new_devices.append(TvTimeShowDetailsSensor(coordinator, 'gender', coordinator.login))
     new_devices.append(TvTimeShowDetailsSensor(coordinator, 'network', coordinator.login))
     new_devices.append(TvTimeShowDetailsSensor(coordinator, 'average_age', coordinator.login))
+    new_devices.append(TvTimeMovieTimeSensor(coordinator, 'movie_time_watched', coordinator.login))
+    new_devices.append(TvTimeMovieCountSensor(coordinator, 'movie_watched_count', coordinator.login))
 
     async_add_devices(new_devices, update_before_add=True)
 
@@ -150,3 +152,30 @@ class TvTimeEpisodeSensor(BaseTvTimeSensor):
         self._state = info['episodes']
 
         self.async_write_ha_state()
+
+class TvTimeMovieTimeSensor(BaseTvTimeSensor):
+    @property
+    def unit_of_measurement(self):
+        return 'hours'
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        data = self.coordinator.data
+
+        self._state = data['info_movie']['time_watched']
+
+        self.async_write_ha_state()
+
+class TvTimeMovieCountSensor(BaseTvTimeSensor):
+    @property
+    def unit_of_measurement(self):
+        return 'movies'
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        data = self.coordinator.data
+
+        self._state = data['info_movie']['watched_count']
+
+        self.async_write_ha_state()
+

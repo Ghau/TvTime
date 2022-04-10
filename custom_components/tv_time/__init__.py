@@ -53,6 +53,7 @@ class TvTimeCoordinator(DataUpdateCoordinator):
                 'info_remaining': await self.tv_time.get_info_remaining(),
                 'info_series': await self.tv_time.get_info_series(),
                 'info_series_details': await self.tv_time.get_info_series_details(),
+                'info_movie': await self.tv_time.get_info_movies(),
             }
 
             return self.data

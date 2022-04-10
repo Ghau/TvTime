@@ -19,6 +19,9 @@ STATS_REMAINING = '/v2/user/{user_id}/statistics?stat_type=remaining&viewer_id={
 STATS_SERIES_DETAILS = '/v2/user/2865197/statistics?stat_type=shows&viewer_id=2865197&lang=fr'
 STATS_SERIES = '/v2/my_shows?fields=shows.fields(id,name,stripped_name,country)'
 
+BASE_URL_MOVIE = 'msapi.tvtime.com'
+STATS_MOVIES = '/prod/v1/movies/stats/user/{user_id}'
+
 
 class TvTimeClient:
     auth = None
@@ -37,7 +40,7 @@ class TvTimeClient:
         try:
             r = await self.session.post(f'https://{BASE_URL}{SIGNIN}',
                 data={'username': self.email, 'password': self.password},
-                headers=self._get_headers())
+                headers=self._get_headers(BASE_URL))
         except Exception as e:
             _LOGGER.exception(f'Can\'t login to Tv Time: {e}')
             return False
@@ -156,7 +159,20 @@ class TvTimeClient:
         try:
             _LOGGER.debug(f"CALL API : {url}")
             r = await self.session.get('https://' + BASE_URL + url.replace('{user_id}', self.auth['user_id']),
-                headers={**self._get_headers(), **{'Authorization': 'Bearer ' + self.auth['tvst_access_token']}})
+                headers={**self._get_headers(BASE_URL), **{'Authorization': 'Bearer ' + self.auth['tvst_access_token']}})
+        except Exception as e:
+            _LOGGER.exception(f"Can't get stats watched from Tv Time: {e}")
+            return False
+
+        return await r.read()
+
+    async def call_tv_time_movie(self, url: str):
+        if self.auth == None:
+            await self.login()
+        try:
+            _LOGGER.debug(f"CALL API : {url}")
+            r = await self.session.get('https://' + BASE_URL_MOVIE + url.replace('{user_id}', self.auth['user_id']),
+                headers={**self._get_headers(BASE_URL_MOVIE), **{'Authorization': 'Bearer ' + self.auth['tvst_access_token']}})
         except Exception as e:
             _LOGGER.exception(f"Can't get stats watched from Tv Time: {e}")
             return False
@@ -187,11 +203,20 @@ class TvTimeClient:
 
         return self.format_series_details_data(resp)
 
-    def _get_headers(self) -> Dict:
+    async def get_info_movies(self):
+        raw = await self.call_tv_time_movie(STATS_MOVIES)
+        resp: dict = json.loads(raw)
+
+        return {
+            'time_watched': round(resp['data']['time_watched'] / 60 / 60, 2),
+            'watched_count': resp['data']['watched_count'],
+        }
+
+    def _get_headers(self, base_url: str) -> Dict:
         return {
             'User-Agent': USER_AGENT,
             'X-API-Key': X_API_Key,
-            'host': BASE_URL,
+            'host': base_url,
             'app-version': APP_VERSION,
             'country-code': COUNTRY_CODE,
             'user-lang-setting': USER_AGENT
