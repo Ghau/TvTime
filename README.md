@@ -17,7 +17,7 @@ You need to copy the `tvTime` folder from this repo to the `custom_components` f
 └── ...
 └── configuration.yaml
 └── custom_components
-    └── tv_time
+    └── TvTime
         └── __init__.py
         └── config_flow.py
         └── const.py
