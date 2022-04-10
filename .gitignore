@@ -1,6 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-custom_components/tv_time/__pycache__/
+custom_components/TvTime/__pycache__/
 *.py[cod]
 *$py.class
 
