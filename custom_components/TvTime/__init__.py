@@ -44,7 +44,13 @@ class TvTimeCoordinator(DataUpdateCoordinator):
         self.login = login
         self.password = password
         self.tv_time = TvTimeClient(async_get_clientsession(self.hass), self.login, self.password)
-        self.data = {}
+        self.data = {
+            'info': None,
+            'info_remaining': None,
+            'info_series': None,
+            'info_series_details': None,
+            'info_movie': None,
+        }
 
     async def _async_update_data(self):
         try:
@@ -58,4 +64,4 @@ class TvTimeCoordinator(DataUpdateCoordinator):
 
             return self.data
         except Exception as e:
-            _LOGGER.error(f"Error on get info {e}")
+            _LOGGER.error(f"Error on _async_update_data {e}")
