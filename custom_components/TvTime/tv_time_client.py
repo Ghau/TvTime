@@ -16,7 +16,7 @@ USER_LANG_SETTING = 'en'
 SIGNIN = '/v2/signin'
 STATS_WATCHED = '/v2/user/{user_id}/statistics?stat_type=watched&viewer_id={user_id}&lang=fr'
 STATS_REMAINING = '/v2/user/{user_id}/statistics?stat_type=remaining&viewer_id={user_id}&lang=fr'
-STATS_SERIES_DETAILS = '/v2/user/2865197/statistics?stat_type=shows&viewer_id=2865197&lang=fr'
+STATS_SERIES_DETAILS = '/v2/user/{user_id}/statistics?stat_type=shows&viewer_id={user_id}&lang=fr'
 STATS_SERIES = '/v2/my_shows?fields=shows.fields(id,name,stripped_name,country)'
 
 BASE_URL_MOVIE = 'msapi.tvtime.com'
@@ -160,9 +160,11 @@ class TvTimeClient:
             _LOGGER.debug(f"CALL API : {url}")
             r = await self.session.get('https://' + BASE_URL + url.replace('{user_id}', self.auth['user_id']),
                 headers={**self._get_headers(BASE_URL), **{'Authorization': 'Bearer ' + self.auth['tvst_access_token']}})
+            if r.status > 299:
+                raise  Exception(f"Error code {r.status}")
         except Exception as e:
             _LOGGER.exception(f"Can't get stats watched from Tv Time: {e}")
-            return False
+            raise e
 
         return await r.read()
 
@@ -173,44 +175,66 @@ class TvTimeClient:
             _LOGGER.debug(f"CALL API : {url}")
             r = await self.session.get('https://' + BASE_URL_MOVIE + url.replace('{user_id}', self.auth['user_id']),
                 headers={**self._get_headers(BASE_URL_MOVIE), **{'Authorization': 'Bearer ' + self.auth['tvst_access_token']}})
+            if r.status > 299:
+                raise  Exception(f"Error code {r.status}")
         except Exception as e:
             _LOGGER.exception(f"Can't get stats watched from Tv Time: {e}")
-            return False
+            raise e
 
         return await r.read()
 
     async def get_info(self):
-        raw = await self.call_tv_time(STATS_WATCHED)
-        resp: dict = json.loads(raw)
+        try:
+            _LOGGER.info(f"Call get_info")
+            raw = await self.call_tv_time(STATS_WATCHED)
+            resp: dict = json.loads(raw)
 
-        return self.format_data(resp)
+            return self.format_data(resp)
+        except Exception as e:
+            _LOGGER.error(f"Error on get_info {e}")
 
     async def get_info_remaining(self):
-        raw = await self.call_tv_time(STATS_REMAINING)
-        resp: dict = json.loads(raw)
+        try:
+            _LOGGER.info(f"Call get_info_remaining")
+            raw = await self.call_tv_time(STATS_REMAINING)
+            resp: dict = json.loads(raw)
 
-        return self.format_data(resp)
+            return self.format_data(resp)
+        except Exception as e:
+            _LOGGER.error(f"Error on get_info_remaining {e}")
 
     async def get_info_series(self):
-        raw = await self.call_tv_time(STATS_SERIES)
-        resp: dict = json.loads(raw)
+        try:
+            _LOGGER.info(f"Call get_info_series")
+            raw = await self.call_tv_time(STATS_SERIES)
+            resp: dict = json.loads(raw)
 
-        return self.format_series_data(resp)
+            return self.format_series_data(resp)
+        except Exception as e:
+            _LOGGER.error(f"Error on get_info_remaining {e}")
 
     async def get_info_series_details(self):
-        raw = await self.call_tv_time(STATS_SERIES_DETAILS)
-        resp: dict = json.loads(raw)
+        try:
+            _LOGGER.info(f"Call get_info_series_details")
+            raw = await self.call_tv_time(STATS_SERIES_DETAILS)
+            resp: dict = json.loads(raw)
 
-        return self.format_series_details_data(resp)
+            return self.format_series_details_data(resp)
+        except Exception as e:
+            _LOGGER.error(f"Error on get_info_series_details {e}")
 
     async def get_info_movies(self):
-        raw = await self.call_tv_time_movie(STATS_MOVIES)
-        resp: dict = json.loads(raw)
+        try:
+            _LOGGER.info(f"Call get_info_movies")
+            raw = await self.call_tv_time_movie(STATS_MOVIES)
+            resp: dict = json.loads(raw)
 
-        return {
-            'time_watched': round(resp['data']['time_watched'] / 60 / 60, 2),
-            'watched_count': resp['data']['watched_count'],
-        }
+            return {
+                'time_watched': round(resp['data']['time_watched'] / 60 / 60, 2),
+                'watched_count': resp['data']['watched_count'],
+            }
+        except Exception as e:
+            _LOGGER.error(f"Error on get_info_movies {e}")
 
     def _get_headers(self, base_url: str) -> Dict:
         return {
