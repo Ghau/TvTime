@@ -71,7 +71,6 @@ class BaseTvTimeSensor(CoordinatorEntity, Entity):
             'identifiers': {(self._login, DOMAIN)},
             'manufacturer': 'www.tvtime.com',
             'model': 'Series',
-            'default_name': 'tvtime',
             'entry_type': DeviceEntryType.SERVICE,
         }
 
