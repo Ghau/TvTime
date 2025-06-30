@@ -6,10 +6,8 @@ from typing import Any, Callable, Dict, Optional
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.typing import (
-    ConfigType,
-    HomeAssistantType,
-)
+from homeassistant.helpers.typing import ConfigType
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
@@ -17,7 +15,7 @@ from .const import DOMAIN
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass: HomeAssistantType, config: ConfigType, async_add_devices: Callable) -> None:
+async def async_setup_entry(hass: HomeAssistant, config: ConfigType, async_add_devices: Callable) -> None:
     coordinator = hass.data[DOMAIN][config.entry_id]['coordinator']
 
     new_devices = []

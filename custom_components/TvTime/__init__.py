@@ -4,8 +4,8 @@ import logging
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.components.sensor import DOMAIN as SENSOR
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.const import Platform
 
 from .const import DOMAIN
 from .tv_time_client import TvTimeClient
@@ -24,7 +24,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
     hass.config_entries.async_update_entry(config_entry, data=data)
     hass.async_create_task(
-        hass.config_entries.async_forward_entry_setup(config_entry, SENSOR)
+        await hass.config_entries.async_forward_entry_setups(config_entry, [Platform.SENSOR])
     )
 
     return True
