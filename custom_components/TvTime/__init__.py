@@ -23,9 +23,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     }
 
     hass.config_entries.async_update_entry(config_entry, data=data)
-    hass.async_create_task(
-        await hass.config_entries.async_forward_entry_setups(config_entry, [Platform.SENSOR])
-    )
+
+    await hass.config_entries.async_forward_entry_setups(config_entry, [Platform.SENSOR])
 
     return True
 
